@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Neon Borough</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <section class="hud hud-top">
+        <div>
+          <span class="kicker">Neon Borough</span>
+          <strong id="missionTitle">Mission: Courier Run</strong>
+        </div>
+        <div class="hud-stats">
+          <span id="cash" class="stat-chip">$0</span>
+          <span id="wanted" class="stat-chip stat-wanted">Wanted 0</span>
+          <span id="health" class="stat-chip stat-bar health-bar">Health 100</span>
+          <span id="status" class="stat-chip stat-bar stamina-bar">Car</span>
+          <span id="ammo" class="stat-chip stat-bar ammo-bar">Ammo 24</span>
+          <span id="speed" class="stat-chip">0 km/h</span>
+        </div>
+        <button id="settingsButton" class="settings-button" type="button">Settings</button>
+      </section>
+
+      <canvas id="game" width="1280" height="720" aria-label="Open-world driving game"></canvas>
+
+      <section class="hud hud-bottom">
+        <div class="mission-stack">
+          <div id="missionText">Drive to the yellow drop point before the timer ends.</div>
+          <div id="notice">Stop the stealer before he empties the street cash.</div>
+        </div>
+        <div class="controls">
+          <span id="driveControlLabel">ZQSD / Arrows drive</span>
+          <span>E enter/exit car</span>
+          <span id="aimControlLabel">J / Click stun shot</span>
+          <span>F pulse hit</span>
+          <span>Shift boost/sprint</span>
+          <span>Space brake</span>
+          <span>R reset</span>
+        </div>
+      </section>
+
+      <div id="startOverlay" class="overlay">
+        <div class="panel">
+          <h1>Neon Borough</h1>
+          <p>
+            An original city sandbox: drive jobs, leave the car on foot,
+            protect street cash from a stealer, and escape police heat.
+          </p>
+          <div class="panel-actions">
+            <button id="startButton">Start Game</button>
+            <button id="startSettingsButton" class="secondary-button" type="button">Open Settings</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="settingsOverlay" class="overlay settings-overlay hidden">
+        <div class="panel settings-panel">
+          <div class="settings-head">
+            <div>
+              <span class="kicker">Game Settings</span>
+              <h2>Performance and Controls</h2>
+            </div>
+            <button id="closeSettings" class="settings-close" type="button">Close</button>
+          </div>
+
+          <div class="settings-section">
+            <label>Quality</label>
+            <div class="segmented" role="group" aria-label="Quality">
+              <button type="button" data-quality="low">Low</button>
+              <button type="button" data-quality="medium">Medium</button>
+              <button type="button" data-quality="high">High</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <label>Driving Controls</label>
+            <div class="segmented" role="group" aria-label="Driving controls">
+              <button type="button" data-controls="zqsd">ZQSD</button>
+              <button type="button" data-controls="wasd">WASD</button>
+              <button type="button" data-controls="arrows">Arrows</button>
+            </div>
+          </div>
+
+          <div class="settings-toggles">
+            <label><input id="effectsToggle" type="checkbox" /> Effects</label>
+            <label><input id="labelsToggle" type="checkbox" /> Labels</label>
+            <label><input id="mouseAimToggle" type="checkbox" /> Mouse aim</label>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="game.js"></script>
+  </body>
+</html>

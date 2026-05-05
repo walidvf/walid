@@ -1,0 +1,331 @@
+:root {
+  color-scheme: dark;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #111317;
+  color: #f7f1e8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(239, 192, 80, 0.18), transparent 28%),
+    linear-gradient(135deg, #15171c, #20252d 50%, #15191d);
+}
+
+.game-shell {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+
+canvas {
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  background: #202329;
+}
+
+.hud {
+  position: fixed;
+  z-index: 3;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  pointer-events: none;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.65);
+}
+
+.hud .settings-button {
+  pointer-events: auto;
+}
+
+.hud-top {
+  top: 18px;
+}
+
+.hud-bottom {
+  bottom: 18px;
+}
+
+.kicker {
+  display: block;
+  color: #f1c55d;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+#missionTitle {
+  font-size: clamp(20px, 3vw, 34px);
+}
+
+.hud-stats,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.hud-stats span,
+.controls span,
+#missionText,
+#notice {
+  position: relative;
+  overflow: hidden;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(12, 14, 17, 0.62);
+  border-radius: 8px;
+  padding: 8px 11px;
+  backdrop-filter: blur(10px);
+  font-weight: 750;
+}
+
+.stat-chip {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.stat-bar {
+  --level: 100%;
+  --accent: #f1c55d;
+}
+
+.stat-bar::before {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  width: var(--level);
+  height: 4px;
+  background: var(--accent);
+  box-shadow: 0 0 16px var(--accent);
+  transition: width 160ms ease-out;
+}
+
+.health-bar {
+  --accent: #8bd450;
+}
+
+.ammo-bar {
+  --accent: #4cc9f0;
+}
+
+.stamina-bar {
+  --accent: #f1c55d;
+}
+
+.stat-wanted {
+  border-color: rgba(255, 90, 95, 0.34);
+}
+
+.mission-stack {
+  display: grid;
+  gap: 8px;
+  max-width: min(680px, 56vw);
+}
+
+#missionText,
+#notice {
+  max-width: min(680px, 56vw);
+}
+
+#notice {
+  color: #d7f5e4;
+  border-color: rgba(139, 212, 80, 0.32);
+  background: rgba(13, 34, 26, 0.58);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 11, 13, 0.68);
+  backdrop-filter: blur(8px);
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.panel {
+  width: min(520px, calc(100vw - 32px));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  padding: 28px;
+  background: rgba(23, 26, 31, 0.92);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.42);
+}
+
+.panel h1 {
+  margin: 0 0 10px;
+  font-size: clamp(38px, 8vw, 72px);
+  line-height: 0.95;
+}
+
+.panel p {
+  margin: 0 0 22px;
+  color: #d9d4cc;
+  line-height: 1.55;
+}
+
+button {
+  appearance: none;
+  border: 0;
+  border-radius: 8px;
+  min-height: 46px;
+  padding: 0 18px;
+  color: #17130d;
+  background: #f1c55d;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ffd978;
+}
+
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.secondary-button {
+  color: #f7f1e8;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.secondary-button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.settings-button,
+.settings-close {
+  min-height: 38px;
+  padding: 0 13px;
+}
+
+.settings-overlay {
+  pointer-events: auto;
+}
+
+.settings-panel {
+  width: min(620px, calc(100vw - 32px));
+}
+
+.settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.settings-head h2 {
+  margin: 2px 0 0;
+  font-size: clamp(24px, 4vw, 38px);
+  line-height: 1;
+}
+
+.settings-section {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.settings-section label {
+  color: #d9d4cc;
+  font-weight: 850;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.segmented button {
+  min-height: 42px;
+  color: #f7f1e8;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.segmented button.active {
+  color: #17130d;
+  background: #f1c55d;
+  border-color: #f1c55d;
+}
+
+.settings-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.settings-toggles label {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  padding: 8px 11px;
+  background: rgba(255, 255, 255, 0.08);
+  font-weight: 800;
+}
+
+.settings-toggles input {
+  width: 18px;
+  height: 18px;
+  accent-color: #f1c55d;
+}
+
+@media (max-width: 760px) {
+  .hud {
+    left: 10px;
+    right: 10px;
+  }
+
+  .hud-top,
+  .hud-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mission-stack,
+  #missionText,
+  #notice {
+    max-width: none;
+  }
+
+  .hud-stats,
+  .controls {
+    justify-content: flex-start;
+  }
+
+  .segmented {
+    grid-template-columns: 1fr;
+  }
+}
