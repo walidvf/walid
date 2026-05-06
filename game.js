@@ -694,6 +694,16 @@ function ejectDriver(car, role) {
 }
 
 function controlState() {
+  if (joyActive) {
+  return {
+    accelerating: joyY < -0.2,
+    reversing: joyY > 0.2,
+    left: joyX < -0.2,
+    right: joyX > 0.2,
+    braking: false,
+    boost: Math.hypot(joyX, joyY) > 0.8,
+  };
+}
   const useZqsd = settings.controls === "zqsd";
   const useWasd = settings.controls === "wasd";
   const arrows = settings.controls === "arrows";
@@ -1909,3 +1919,192 @@ spawnPickups();
 spawnThief();
 resizeCanvas();
 requestAnimationFrame(loop);
+
+// ================= NPC FEATURES =================
+
+// --- NPC Types ---
+function assignNPCType(npc) {
+  const r = Math.random();
+  if (r < 0.9) {
+    npc.type = "fighter";
+    npc.canKick = true;
+  } else if (r < 0.95) {
+    npc.type = "heavy";
+    npc.weapon = "heavy";
+  } else {
+    npc.type = "civilian";
+    npc.weapon = "simple";
+  }
+  // assign health based on type
+  npc.health = npc.type === "heavy" ? 40 : npc.type === "fighter" ? 25 : 15;
+}
+
+// Wrap spawnPedestrians to assign NPC types after spawning
+const _origSpawnPedestrians = spawnPedestrians;
+spawnPedestrians = function () {
+  _origSpawnPedestrians();
+  for (const p of pedestrians) assignNPCType(p);
+};
+
+// --- NPC Fight System ---
+function npcAttackPlayer(npc) {
+  if (distance(npc, player) < 40) {
+    const damage = npc.type === "fighter" ? 5 : npc.type === "heavy" ? 12 : 2;
+    damagePlayer(damage);
+    addFloatingText(`-${damage}`, player.x, player.y - 20, "#ff0000");
+  }
+}
+
+const _origUpdatePedestrians = updatePedestrians;
+updatePedestrians = function (dt) {
+  _origUpdatePedestrians(dt);
+  for (const p of pedestrians) {
+    if (p.type === "fighter" || p.type === "heavy") npcAttackPlayer(p);
+  }
+};
+
+// --- NPC Kill & Respawn ---
+function killNPC(index) {
+  const p = pedestrians[index];
+  addFloatingText("KO", p.x, p.y - 20, "#ff4444");
+  pedestrians.splice(index, 1);
+  setTimeout(spawnOneNPC, 3000);
+}
+
+function spawnOneNPC() {
+  const point = randomWalkPoint();
+  const npc = {
+    x: point.x, y: point.y,
+    angle: rand(0, Math.PI * 2),
+    speed: rand(24, 58),
+    flee: 0, bumpCooldown: 0,
+    role: "pedestrian",
+  };
+  assignNPCType(npc);
+  pedestrians.push(npc);
+}
+
+// Wrap resolvePlayerShot to damage NPCs
+const _origResolvePlayerShot = resolvePlayerShot;
+resolvePlayerShot = function (shot) {
+  for (let i = 0; i < pedestrians.length; i++) {
+    const p = pedestrians[i];
+    if (distance(shot, p) < 20) {
+      p.health -= 10;
+      if (p.health <= 0) killNPC(i);
+      return true;
+    }
+  }
+  return _origResolvePlayerShot(shot);
+};
+
+// --- Mission NPC ---
+const missionNPC = { x: 500, y: 500, role: "mission_giver" };
+let missionAccepted = false;
+
+function checkMissionNPCInteraction() {
+  if (distance(player, missionNPC) < 60 && keys.has("e")) {
+    missionAccepted = !missionAccepted;
+    showNotice(missionAccepted ? "Mission accepted!" : "Mission rejected.", 2);
+  }
+}
+
+// --- Smarter Police ---
+const _origUpdatePatrols = updatePatrols;
+updatePatrols = function (dt) {
+  _origUpdatePatrols(dt);
+  if (player.wanted > 0) {
+    for (const patrol of patrols) patrol.speed = Math.min(patrol.speed * 1.005, 280);
+  }
+};
+
+// --- Prevent NPCs entering buildings ---
+function forceOutsideBuildings(entity) {
+  if (insideBuilding(entity.x, entity.y, 10)) {
+    const point = randomWalkPoint();
+    entity.x = point.x;
+    entity.y = point.y;
+  }
+}
+
+const _origUpdateOfficers = updateOfficers;
+updateOfficers = function (dt) {
+  _origUpdateOfficers(dt);
+  for (const o of officers) forceOutsideBuildings(o);
+};
+
+// --- Draw Mission NPC ---
+const _origDrawDecorations = drawDecorations;
+drawDecorations = function () {
+  _origDrawDecorations();
+  ctx.fillStyle = "#00ffcc";
+  ctx.beginPath();
+  ctx.arc(missionNPC.x, missionNPC.y, 12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("M", missionNPC.x - 4, missionNPC.y + 4);
+};
+
+// --- Maintain NPC Population & Hook World Update ---
+const _origUpdateWorld = updateWorld;
+updateWorld = function (dt) {
+  _origUpdateWorld(dt);
+  checkMissionNPCInteraction();
+  if (pedestrians.length < 60) spawnOneNPC();
+};
+
+// ================= END NPC FEATURES =================
+// ===== MOBILE JOYSTICK =====
+const joystick = document.getElementById("joystick");
+const stick = document.getElementById("stick");
+
+let joyActive = false;
+let joyX = 0;
+let joyY = 0;
+
+joystick.addEventListener("touchstart", () => joyActive = true);
+
+joystick.addEventListener("touchmove", (e) => {
+  const rect = joystick.getBoundingClientRect();
+  const touch = e.touches[0];
+
+  let x = touch.clientX - rect.left - 60;
+  let y = touch.clientY - rect.top - 60;
+
+  const dist = Math.hypot(x, y);
+  const max = 40;
+
+  if (dist > max) {
+    x = (x / dist) * max;
+    y = (y / dist) * max;
+  }
+
+  stick.style.transform = `translate(${x}px, ${y}px)`;
+
+  joyX = x / max;
+  joyY = y / max;
+});
+
+joystick.addEventListener("touchend", () => {
+  joyActive = false;
+  joyX = 0;
+  joyY = 0;
+  stick.style.transform = `translate(0px, 0px)`;
+});
+// AIM
+const aimZone = document.getElementById("aimZone");
+
+aimZone.addEventListener("touchmove", (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const touch = e.touches[0];
+
+  mouse.x = touch.clientX - rect.left;
+  mouse.y = touch.clientY - rect.top;
+  mouse.active = true;
+});
+
+// SHOOT
+document.getElementById("shootBtn").addEventListener("touchstart", (e) => {
+  e.preventDefault();
+  shootWeapon();
+});
